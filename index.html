@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura AI | Next-Gen Productivity</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts & Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- AOS Library for Scroll Animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#E2C98B',
+                        secondary: '#C0A76B',
+                        accent: '#F3E5AB',
+                        dark: '#050505',
+                        offwhite: '#E2E8F0',
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #050505; cursor: none; overflow-x: hidden; }
+        
+        /* Smooth scrolling padding for anchor links */
+        section { scroll-margin-top: 5rem; }
+
+        @media (prefers-reduced-motion: reduce) {
+            body { cursor: auto; }
+            #cursor, #cursor-follower, .sparkle { display: none !important; }
+        }
+
+        /* --- FLUID MOTION CURSOR SYSTEM --- */
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            border-radius: 50%;
+            z-index: 10000;
+            filter: blur(0.2px);
+            will-change: transform, opacity;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        #cursor {
+            width: 6px; height: 6px;
+            background: #E2C98B;
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            box-shadow: 0 0 10px #E2C98B;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+            will-change: transform;
+        }
+
+        #cursor-follower {
+            width: 28px; height: 28px;
+            border: 1px solid rgba(226, 201, 139, 0.3);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: width 0.4s cubic-bezier(0.23, 1, 0.32, 1), 
+                        height 0.4s cubic-bezier(0.23, 1, 0.32, 1), 
+                        background 0.4s ease, 
+                        border-color 0.4s ease, 
+                        opacity 0.5s ease;
+            opacity: 0;
+            will-change: transform;
+        }
+
+        /* --- UI COMPONENTS --- */
+        .glass {
+            background: rgba(5, 5, 5, 0.85);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(226, 201, 139, 0.08);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #E2C98B 0%, #F3E5AB 50%, #E2E8F0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .mesh-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(226, 201, 139, 0.04) 0, transparent 50%), 
+                radial-gradient(at 100% 100%, rgba(226, 232, 240, 0.02) 0, transparent 50%);
+            z-index: -1;
+        }
+
+        .premium-card {
+            transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            border: 1px solid rgba(226, 201, 139, 0.04);
+            background: rgba(255, 255, 255, 0.01);
+        }
+        .premium-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            border-color: rgba(226, 201, 139, 0.2);
+            background: rgba(226, 201, 139, 0.02);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        }
+
+        .btn-gold {
+            background: linear-gradient(135deg, #E2C98B 0%, #C0A76B 100%);
+            color: #050505;
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        .btn-gold:hover {
+            box-shadow: 0 12px 24px -6px rgba(226, 201, 139, 0.3);
+            transform: translateY(-2px);
+            filter: brightness(1.05);
+        }
+
+        .gallery-item {
+            overflow: hidden;
+            border-radius: 1.5rem;
+            position: relative;
+            background: #0a0a0a;
+        }
+        .gallery-item img {
+            transition: transform 1.2s cubic-bezier(0.23, 1, 0.32, 1), filter 1.2s ease;
+            filter: grayscale(100%) brightness(0.7);
+        }
+        .gallery-item:hover img {
+            transform: scale(1.05);
+            filter: grayscale(20%) brightness(0.9);
+        }
+
+        /* Mobile Menu */
+        #mobile-menu {
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-20px);
+        }
+        #mobile-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1024px) { 
+            #cursor, #cursor-follower, .sparkle { display: none !important; } 
+            body { cursor: auto; } 
+        }
+    </style>
+</head>
+<body class="text-slate-400 antialiased selection:bg-primary/20">
+
+    <div id="cursor" aria-hidden="true"></div>
+    <div id="cursor-follower" aria-hidden="true"></div>
+    <div class="mesh-bg" aria-hidden="true"></div>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 glass" role="navigation">
+        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex items-center space-x-6 group cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                    <!-- Updated Logo based on user screenshot -->
+                    <div class="logo-glow transition-transform duration-700 group-hover:scale-110">
+                        <svg width="42" height="42" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="45" cy="40" r="28" stroke="#E2C98B" stroke-width="2" />
+                            <path d="M45 40C45 40 55 25 68 40C68 40 72 65 45 85" stroke="#E2C98B" stroke-width="2.5" stroke-linecap="round" />
+                            <circle cx="56" cy="38" r="1.5" fill="#E2C98B" />
+                        </svg>
+                    </div>
+                    <!-- Brand text updated to match specific screenshot styling -->
+                    <div class="flex items-baseline space-x-[0.2em]">
+                        <span class="text-xl font-extrabold tracking-[0.4em] text-white/90 uppercase">Aura</span>
+                        <span class="text-xl font-extrabold tracking-[0.4em] text-primary uppercase">AI</span>
+                    </div>
+                </div>
+                
+                <!-- Desktop Nav -->
+                <div class="hidden md:flex items-center space-x-10">
+                    <a href="#home" class="text-[10px] font-black tracking-[0.3em] uppercase hover:text-primary transition-all duration-300 text-offwhite/70">Home</a>
+                    <a href="#solutions" class="text-[10px] font-black tracking-[0.3em] uppercase hover:text-primary transition-all duration-300 text-offwhite/70">Solutions</a>
+                    <a href="#gallery" class="text-[10px] font-black tracking-[0.3em] uppercase hover:text-primary transition-all duration-300 text-offwhite/70">Gallery</a>
+                    <a href="#testimonials" class="text-[10px] font-black tracking-[0.3em] uppercase hover:text-primary transition-all duration-300 text-offwhite/70">Testimonials</a>
+                    <a href="#contact" class="px-6 py-2 btn-gold text-[10px] font-black uppercase tracking-widest rounded-full">Reserve Access</a>
+                </div>
+
+                <!-- Mobile Toggle -->
+                <button id="menu-toggle" class="md:hidden text-primary p-2" aria-label="Toggle Navigation">
+                    <i class="fas fa-bars-staggered text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div id="mobile-menu" class="md:hidden absolute top-20 left-0 w-full bg-dark/95 border-b border-primary/10 px-8 py-10 flex flex-col space-y-6">
+            <a href="#home" class="mobile-link text-offwhite font-bold tracking-widest uppercase text-xs">Home</a>
+            <a href="#solutions" class="mobile-link text-offwhite font-bold tracking-widest uppercase text-xs">Solutions</a>
+            <a href="#gallery" class="mobile-link text-offwhite font-bold tracking-widest uppercase text-xs">Gallery</a>
+            <a href="#testimonials" class="mobile-link text-offwhite font-bold tracking-widest uppercase text-xs">Testimonials</a>
+            <a href="#contact" class="px-6 py-4 btn-gold text-[10px] font-black uppercase tracking-widest rounded-xl text-center">Reserve Access</a>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <header id="home" class="relative pt-32 pb-16 min-h-[90vh] flex items-center justify-center text-center px-6">
+            <div class="max-w-5xl" data-aos="fade-up" data-aos-duration="1200">
+                <div class="inline-block px-5 py-2 border border-primary/10 bg-primary/5 rounded-full mb-6">
+                    <span class="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Neural Orchestration v4.0</span>
+                </div>
+                <h1 class="text-5xl md:text-[6.5rem] font-black text-white mb-6 tracking-tighter leading-tight">
+                    Productivity <br/>
+                    <span class="text-gradient">Elevated.</span>
+                </h1>
+                <p class="text-base md:text-lg text-slate-500 max-w-xl mx-auto mb-10 font-light leading-relaxed tracking-wide">
+                    AI-powered productivity for students and professionals — manage tasks, automate workflows, and stay focused effortlessly.
+                </p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="#contact" class="px-10 py-4 btn-gold font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl w-full sm:w-auto">Start Execution</a>
+                    <a href="#solutions" class="px-10 py-4 border border-offwhite/5 text-offwhite/60 font-black uppercase tracking-[0.2em] text-[10px] rounded-2xl hover:bg-offwhite/5 hover:text-white transition-all duration-300 w-full sm:w-auto">Explore Tech</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Features Section -->
+        <section id="solutions" class="py-24 border-t border-offwhite/5">
+            <div class="max-w-7xl mx-auto px-8">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <h2 class="text-xs font-black tracking-[0.5em] text-primary uppercase mb-3">Workflow Optimization</h2>
+                    <h3 class="text-3xl md:text-5xl font-bold text-white tracking-tight">Your Assistant, <span class="text-primary/50 italic">Refined.</span></h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="premium-card p-8 rounded-[2rem] flex flex-col items-center text-center group" data-aos="fade-up">
+                        <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors duration-500">
+                            <i class="fas fa-file-alt text-primary text-xl"></i>
+                        </div>
+                        <h4 class="text-white font-bold uppercase tracking-widest mb-3 text-xs">Summarize notes</h4>
+                        <p class="text-[11px] leading-relaxed text-slate-500">Transform raw transcripts into structured intelligence effortlessly.</p>
+                    </div>
+                    <div class="premium-card p-8 rounded-[2rem] flex flex-col items-center text-center group" data-aos="fade-up" data-aos-delay="100">
+                        <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors duration-500">
+                            <i class="fas fa-check-double text-primary text-xl"></i>
+                        </div>
+                        <h4 class="text-white font-bold uppercase tracking-widest mb-3 text-xs">Manage tasks</h4>
+                        <p class="text-[11px] leading-relaxed text-slate-500">Delegate and track complex project hierarchies in one place.</p>
+                    </div>
+                    <div class="premium-card p-8 rounded-[2rem] flex flex-col items-center text-center group" data-aos="fade-up" data-aos-delay="200">
+                        <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors duration-500">
+                            <i class="fas fa-calendar-day text-primary text-xl"></i>
+                        </div>
+                        <h4 class="text-white font-bold uppercase tracking-widest mb-3 text-xs">Auto-schedule</h4>
+                        <p class="text-[11px] leading-relaxed text-slate-500">Dynamic calendar balancing that prioritizes deep work sessions.</p>
+                    </div>
+                    <div class="premium-card p-8 rounded-[2rem] flex flex-col items-center text-center group" data-aos="fade-up" data-aos-delay="300">
+                        <div class="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors duration-500">
+                            <i class="fas fa-lightbulb text-primary text-xl"></i>
+                        </div>
+                        <h4 class="text-white font-bold uppercase tracking-widest mb-3 text-xs">Generate ideas</h4>
+                        <p class="text-[11px] leading-relaxed text-slate-500">Lateral thinking engines for instant creative breakthroughs.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Visual Showcase / Gallery -->
+        <section id="gallery" class="py-24 border-t border-offwhite/5 bg-black">
+            <div class="max-w-7xl mx-auto px-8">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <h2 class="text-xs font-black tracking-[0.5em] text-primary uppercase mb-3">The Aesthetic</h2>
+                    <h3 class="text-3xl md:text-5xl font-bold text-white tracking-tight">Elegance in <span class="text-primary/50">Execution.</span></h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-6 h-auto md:h-[600px]">
+                    <div class="gallery-item md:col-span-8 h-[300px] md:h-full" data-aos="zoom-in">
+                        <img src="https://images.unsplash.com/photo-1639322537228-f710d846310a?q=80&w=2678&auto=format&fit=crop" class="w-full h-full object-cover" alt="Interface Visualization">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent p-10 flex flex-col justify-end">
+                            <span class="text-primary text-[10px] font-black uppercase tracking-[0.3em] mb-2">Alpha UI</span>
+                            <h5 class="text-white font-bold uppercase tracking-widest text-lg">Neural Mapping Engine</h5>
+                        </div>
+                    </div>
+                    <div class="md:col-span-4 flex flex-col gap-6">
+                        <div class="gallery-item flex-1 min-h-[250px]" data-aos="zoom-in" data-aos-delay="100">
+                            <img src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover" alt="Minimal Dashboard">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent p-8 flex flex-col justify-end">
+                                <h5 class="text-white font-bold uppercase tracking-widest text-xs">Seamless Sync</h5>
+                            </div>
+                        </div>
+                        <div class="gallery-item flex-1 min-h-[250px]" data-aos="zoom-in" data-aos-delay="200">
+                            <img src="https://images.unsplash.com/photo-1550684848-fac1c5b4e853?q=80&w=2670&auto=format&fit=crop" class="w-full h-full object-cover" alt="Focus Mode">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent p-8 flex flex-col justify-end">
+                                <h5 class="text-white font-bold uppercase tracking-widest text-xs">Deep Focus Flow</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials -->
+        <section id="testimonials" class="py-24 border-t border-offwhite/5 bg-white/[0.01]">
+            <div class="max-w-7xl mx-auto px-8">
+                <div class="text-center mb-16" data-aos="fade-up">
+                    <h2 class="text-xs font-black tracking-[0.5em] text-primary uppercase mb-3">Community Praise</h2>
+                    <h3 class="text-3xl md:text-4xl font-bold text-white tracking-tight">Trusted by Industry Leaders.</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="premium-card p-10 rounded-[2.5rem]" data-aos="fade-up">
+                        <p class="text-slate-400 italic mb-8 text-sm leading-relaxed">"Aura AI has fundamentally shifted how our engineering team handles sprint planning."</p>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-slate-800 mr-4 flex items-center justify-center text-primary"><i class="fas fa-user"></i></div>
+                            <div>
+                                <h5 class="text-white text-[10px] font-bold uppercase tracking-widest">Sarah Jenkins</h5>
+                                <p class="text-[9px] text-primary uppercase font-bold tracking-widest">CTO, Vertex Dynamics</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="premium-card p-10 rounded-[2.5rem]" data-aos="fade-up" data-aos-delay="100">
+                        <p class="text-slate-400 italic mb-8 text-sm leading-relaxed">"The most beautiful productivity tool I've ever used. It inspires every day."</p>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-slate-800 mr-4 flex items-center justify-center text-primary"><i class="fas fa-user"></i></div>
+                            <div>
+                                <h5 class="text-white text-[10px] font-bold uppercase tracking-widest">Marc LeBlanc</h5>
+                                <p class="text-[9px] text-primary uppercase font-bold tracking-widest">Founder, Obsidian Creative</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="premium-card p-10 rounded-[2.5rem]" data-aos="fade-up" data-aos-delay="200">
+                        <p class="text-slate-400 italic mb-8 text-sm leading-relaxed">"Finally, an AI assistant that understands enterprise project dependencies."</p>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-slate-800 mr-4 flex items-center justify-center text-primary"><i class="fas fa-user"></i></div>
+                            <div>
+                                <h5 class="text-white text-[10px] font-bold uppercase tracking-widest">Elena Rossi</h5>
+                                <p class="text-[9px] text-primary uppercase font-bold tracking-widest">Director, Global Ops</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Social Connect -->
+        <section id="connect" class="py-24 border-t border-offwhite/5">
+            <div class="max-w-7xl mx-auto px-8 text-center">
+                <div data-aos="fade-up">
+                    <h2 class="text-xs font-black tracking-[0.5em] text-primary uppercase mb-6">Stay Synchronized</h2>
+                    <h3 class="text-4xl md:text-5xl font-bold text-white mb-12 tracking-tight">Connect with the <span class="italic text-primary/80">Future.</span></h3>
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <a href="#" class="group flex items-center space-x-4 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl hover:border-primary/40 hover:bg-primary/5 transition-all duration-500">
+                            <i class="fab fa-x-twitter text-2xl text-white group-hover:text-primary transition-colors"></i>
+                            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-white/70 group-hover:text-white transition-colors">Twitter</span>
+                        </a>
+                        <a href="#" class="group flex items-center space-x-4 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl hover:border-primary/40 hover:bg-primary/5 transition-all duration-500">
+                            <i class="fab fa-github text-2xl text-white group-hover:text-primary transition-colors"></i>
+                            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-white/70 group-hover:text-white transition-colors">GitHub</span>
+                        </a>
+                        <a href="#" class="group flex items-center space-x-4 px-8 py-4 bg-white/5 border border-white/10 rounded-2xl hover:border-primary/40 hover:bg-primary/5 transition-all duration-500">
+                            <i class="fab fa-linkedin-in text-2xl text-white group-hover:text-primary transition-colors"></i>
+                            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-white/70 group-hover:text-white transition-colors">LinkedIn</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Final CTA -->
+        <section id="contact" class="py-24 border-t border-offwhite/5 relative bg-gradient-to-b from-transparent to-primary/5">
+            <div class="max-w-4xl mx-auto px-8 text-center" data-aos="fade-up">
+                <h2 class="text-4xl md:text-6xl font-bold text-white mb-8 tracking-tighter">Ready for the Next Phase?</h2>
+                <p class="text-slate-500 mb-12 max-w-lg mx-auto">Join the private beta. We are onboarding 500 new high-performance teams this month.</p>
+                <form class="premium-card p-2 rounded-2xl flex flex-col md:flex-row gap-2 max-w-2xl mx-auto" onsubmit="event.preventDefault(); alert('Submission Received! Our team will contact you shortly.');">
+                    <input type="email" placeholder="Enter corporate email" class="flex-1 bg-transparent border-none px-6 py-4 text-white focus:outline-none text-sm placeholder:text-slate-700" required>
+                    <button type="submit" class="px-8 py-4 btn-gold font-black uppercase tracking-[0.1em] text-[10px] rounded-xl">Reserve Access</button>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-16 border-t border-offwhite/5 bg-black">
+        <div class="max-w-7xl mx-auto px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-8 mb-12">
+                <div class="flex flex-col items-center md:items-start space-y-2">
+                    <span class="text-xl font-bold tracking-[0.25em] text-white uppercase">Aura<span class="text-primary">AI</span></span>
+                    <p class="text-slate-500 text-[10px] tracking-widest uppercase">Intelligence, Refined.</p>
+                </div>
+                <div class="flex space-x-8 text-[9px] font-black tracking-[0.3em] uppercase text-white/30">
+                    <a href="#" class="hover:text-primary transition-colors">Platform</a>
+                    <a href="#" class="hover:text-primary transition-colors">Privacy</a>
+                    <a href="#" class="hover:text-primary transition-colors">Security</a>
+                </div>
+            </div>
+            <div class="pt-8 border-t border-white/5 text-center">
+                <p class="text-[9px] font-bold tracking-[0.3em] text-white/10 uppercase">Aura Labs &copy; 2024. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // AOS Animation
+        AOS.init({ once: true, duration: 1000, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' });
+
+        // Mobile Menu
+        const menuBtn = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+            menuBtn.querySelector('i').classList.toggle('fa-bars-staggered');
+            menuBtn.querySelector('i').classList.toggle('fa-xmark');
+        });
+
+        // Close menu on link click
+        document.querySelectorAll('.mobile-link').forEach(l => {
+            l.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+                menuBtn.querySelector('i').classList.add('fa-bars-staggered');
+                menuBtn.querySelector('i').classList.remove('fa-xmark');
+            });
+        });
+
+        // Cursor System
+        const cursor = document.getElementById('cursor');
+        const follower = document.getElementById('cursor-follower');
+        const colors = ['#E2C98B', '#F3E5AB', '#E2E8F0'];
+        let mouseX = 0, mouseY = 0, followX = 0, followY = 0, curX = 0, curY = 0;
+
+        function createSparkle(x, y, isClick = false) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            const size = Math.random() * (isClick ? 4 : 1.5) + 1.5;
+            sparkle.style.width = sparkle.style.height = `${size}px`;
+            sparkle.style.left = `${x}px`;
+            sparkle.style.top = `${y}px`;
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            sparkle.style.background = sparkle.style.color = color;
+            document.body.appendChild(sparkle);
+            const angle = Math.random() * Math.PI * 2;
+            const dist = isClick ? (Math.random() * 60 + 30) : (Math.random() * 30 + 15);
+            sparkle.animate([
+                { transform: 'translate(0, 0) scale(1)', opacity: 0.8 },
+                { transform: `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0)`, opacity: 0 }
+            ], { duration: isClick ? 800 : 700, easing: 'ease-out' }).onfinish = () => sparkle.remove();
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX; mouseY = e.clientY;
+            cursor.style.opacity = follower.style.opacity = "1";
+            if (Math.random() > 0.85) createSparkle(mouseX, mouseY);
+        });
+
+        const loop = (t) => {
+            curX += (mouseX - curX) * 0.3; curY += (mouseY - curY) * 0.3;
+            cursor.style.transform = `translate(${curX - 3}px, ${curY - 3}px)`;
+            followX += (mouseX - followX) * 0.12; followY += (mouseY - followY) * 0.12;
+            follower.style.transform = `translate(${followX - 14}px, ${followY - 14}px)`;
+            requestAnimationFrame(loop);
+        };
+        requestAnimationFrame(loop);
+
+        document.addEventListener('mousedown', () => {
+            follower.style.transform += ' scale(0.7)';
+            for(let i=0; i<10; i++) createSparkle(mouseX, mouseY, true);
+        });
+
+        document.querySelectorAll('a, button, .premium-card').forEach(el => {
+            el.addEventListener('mouseenter', () => {
+                follower.style.width = '45px'; follower.style.height = '45px';
+                follower.style.background = 'rgba(226, 201, 139, 0.05)';
+            });
+            el.addEventListener('mouseleave', () => {
+                follower.style.width = '28px'; follower.style.height = '28px';
+                follower.style.background = 'transparent';
+            });
+        });
+    </script>
+</body>
+</html>
